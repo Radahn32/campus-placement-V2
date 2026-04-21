@@ -1,0 +1,13 @@
+punishable_API_key:
+sb_publishable_HrmI9Y0YWiobX717EY_KsQ_9BiORi8F
+
+https://nlhzzugjhlxyhdqcoloz.supabase.co/rest/v1/
+
+
+user:
+nnmtest@nmamit.in
+test
+
+tpo:
+tpo@nmamit.in
+testtpo
