@@ -34,6 +34,16 @@ export default function Dashboard() {
   const [newSkill, setNewSkill] = useState('');
   const [gapModal, setGapModal] = useState(null);
 
+  // About Me fields
+  const [bio, setBio] = useState('');
+  const [branch, setBranch] = useState('');
+  const [year, setYear] = useState('');
+  const [phone, setPhone] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [editingAbout, setEditingAbout] = useState(false);
+  const [aboutDraft, setAboutDraft] = useState({});
+
   useEffect(() => {
     fetchInitialData();
   }, []);
@@ -52,7 +62,7 @@ export default function Dashboard() {
     // 2. Fetch Profile (GPA, Name)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('gpa, full_name')
+      .select('gpa, full_name, bio, branch, year, github_url, linkedin_url, phone')
       .eq('id', user.id)
       .single();
     if (profile) {
@@ -62,6 +72,12 @@ export default function Dashboard() {
         setName(profile.full_name);
         setNameInput(profile.full_name);
       }
+      setBio(profile.bio || '');
+      setBranch(profile.branch || '');
+      setYear(profile.year?.toString() || '');
+      setPhone(profile.phone || '');
+      setGithubUrl(profile.github_url || '');
+      setLinkedinUrl(profile.linkedin_url || '');
     }
 
     // 3. Fetch Student Skills
@@ -122,6 +138,31 @@ export default function Dashboard() {
       alert('Failed to update name');
     }
     setEditingName(false);
+  };
+
+  const handleAboutSave = async () => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        bio: aboutDraft.bio || null,
+        branch: aboutDraft.branch || null,
+        year: aboutDraft.year ? parseInt(aboutDraft.year) : null,
+        phone: aboutDraft.phone || null,
+        github_url: aboutDraft.githubUrl || null,
+        linkedin_url: aboutDraft.linkedinUrl || null,
+      })
+      .eq('id', user.id);
+    if (!error) {
+      setBio(aboutDraft.bio || '');
+      setBranch(aboutDraft.branch || '');
+      setYear(aboutDraft.year || '');
+      setPhone(aboutDraft.phone || '');
+      setGithubUrl(aboutDraft.githubUrl || '');
+      setLinkedinUrl(aboutDraft.linkedinUrl || '');
+    } else {
+      alert('Failed to save profile.');
+    }
+    setEditingAbout(false);
   };
 
   const handleAddSkill = async () => {
@@ -528,6 +569,42 @@ export default function Dashboard() {
       letterSpacing: '-0.01em', lineHeight: 1.5,
     },
 
+    // ABOUT FORM
+    aboutGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
+    aboutInput: {
+      width: '100%', padding: '10px 13px',
+      background: '#f5f5f7', border: '1.5px solid #e5e5ea',
+      borderRadius: '10px', fontSize: '14px', fontFamily: 'inherit',
+      color: '#1d1d1f', outline: 'none', boxSizing: 'border-box',
+      transition: 'border-color 0.2s, box-shadow 0.2s, background 0.2s',
+    },
+    aboutLabel: {
+      display: 'block', fontSize: '12px', fontWeight: '500',
+      color: '#6e6e73', marginBottom: '6px', letterSpacing: '0.01em',
+    },
+    aboutValueRow: { display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' },
+    aboutChip: {
+      padding: '4px 12px', borderRadius: '980px',
+      background: '#f5f5f7', color: '#3d3d3f',
+      fontSize: '13px', fontWeight: '500',
+    },
+    aboutLink: {
+      color: '#0071e3', textDecoration: 'none',
+      fontSize: '13px', fontWeight: '500',
+      padding: '4px 12px', borderRadius: '10px', background: '#f0f6ff',
+    },
+    saveBtnSm: {
+      padding: '7px 18px', borderRadius: '980px',
+      background: '#0071e3', color: '#fff',
+      border: 'none', fontSize: '13px', fontWeight: '500',
+      fontFamily: 'inherit', cursor: 'pointer',
+    },
+    cancelBtnSm: {
+      padding: '7px 14px', borderRadius: '980px',
+      background: 'none', color: '#6e6e73',
+      border: 'none', fontSize: '13px',
+      fontFamily: 'inherit', cursor: 'pointer',
+    },
     // FOOTER
     footer: {
       borderTop: '1px solid #d2d2d7',
@@ -644,6 +721,74 @@ export default function Dashboard() {
               </button>
             )}
           </div>
+        </div>
+
+        {/* ABOUT ME CARD */}
+        <div style={S.card}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <p style={{ ...S.sectionLabel, marginBottom: 0 }}>About Me</p>
+            {!editingAbout ? (
+              <button style={S.gpaEdit} onClick={() => {
+                setAboutDraft({ bio, branch, year, phone, githubUrl, linkedinUrl });
+                setEditingAbout(true);
+              }}>Edit</button>
+            ) : (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button style={S.saveBtnSm} onClick={handleAboutSave}>Save</button>
+                <button style={S.cancelBtnSm} onClick={() => setEditingAbout(false)}>Cancel</button>
+              </div>
+            )}
+          </div>
+
+          {editingAbout ? (
+            <div>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={S.aboutLabel}>Bio</label>
+                <textarea
+                  style={{ ...S.aboutInput, minHeight: '80px', resize: 'vertical' }}
+                  placeholder="Tell recruiters about yourself…"
+                  value={aboutDraft.bio || ''}
+                  onChange={e => setAboutDraft(d => ({ ...d, bio: e.target.value }))}
+                  onFocus={e => { e.target.style.borderColor = '#0071e3'; e.target.style.background = '#fff'; e.target.style.boxShadow = '0 0 0 3px rgba(0,113,227,0.15)'; }}
+                  onBlur={e => { e.target.style.borderColor = '#e5e5ea'; e.target.style.background = '#f5f5f7'; e.target.style.boxShadow = 'none'; }}
+                />
+              </div>
+              <div style={S.aboutGrid}>
+                {[
+                  { label: 'Branch', key: 'branch', placeholder: 'e.g. Computer Science', type: 'text' },
+                  { label: 'Year of Study', key: 'year', placeholder: 'e.g. 2', type: 'number' },
+                  { label: 'Phone', key: 'phone', placeholder: '+91 9876543210', type: 'text' },
+                  { label: 'GitHub URL', key: 'githubUrl', placeholder: 'https://github.com/you', type: 'url' },
+                  { label: 'LinkedIn URL', key: 'linkedinUrl', placeholder: 'https://linkedin.com/in/you', type: 'url' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label style={S.aboutLabel}>{f.label}</label>
+                    <input
+                      type={f.type} style={S.aboutInput} placeholder={f.placeholder}
+                      value={aboutDraft[f.key] || ''}
+                      onChange={e => setAboutDraft(d => ({ ...d, [f.key]: e.target.value }))}
+                      onFocus={e => { e.target.style.borderColor = '#0071e3'; e.target.style.background = '#fff'; e.target.style.boxShadow = '0 0 0 3px rgba(0,113,227,0.15)'; }}
+                      onBlur={e => { e.target.style.borderColor = '#e5e5ea'; e.target.style.background = '#f5f5f7'; e.target.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div>
+              {bio && <p style={{ fontSize: '14px', color: '#3d3d3f', lineHeight: 1.7, marginBottom: '14px' }}>{bio}</p>}
+              <div style={S.aboutValueRow}>
+                {branch && <span style={S.aboutChip}>📚 {branch}</span>}
+                {year && <span style={S.aboutChip}>🎓 Year {year}</span>}
+                {phone && <span style={S.aboutChip}>📞 {phone}</span>}
+                {githubUrl && <a href={githubUrl} target="_blank" rel="noreferrer" style={S.aboutLink}>⌨️ GitHub</a>}
+                {linkedinUrl && <a href={linkedinUrl} target="_blank" rel="noreferrer" style={S.aboutLink}>💼 LinkedIn</a>}
+                {!bio && !branch && !year && !phone && !githubUrl && !linkedinUrl && (
+                  <span style={{ fontSize: '13px', color: '#6e6e73', fontStyle: 'italic' }}>Click Edit to add your details.</span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <p style={{ ...S.sectionLabel, marginBottom: '18px' }}>Job Feed · {jobs.length} openings</p>

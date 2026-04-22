@@ -154,7 +154,7 @@ export default function Admin() {
     // Fetch all students (removed .gte('gpa') so we can safely filter numerically on the frontend)
     const { data: students } = await supabase
       .from('profiles')
-      .select('id, email, gpa, student_skills(skills(skill_name))')
+      .select('id, email, full_name, gpa, student_skills(skills(skill_name))')
       .eq('role', 'student');
 
     if (!students || students.length === 0) {
@@ -171,6 +171,7 @@ export default function Admin() {
       .map(s => ({
         id: s.id,
         email: s.email,
+        name: s.full_name || 'Unnamed Student',
         gpa: parseFloat(s.gpa) || 0,
         skills: s.student_skills?.map(ss => ss.skills.skill_name) || [],
       }))
@@ -591,7 +592,13 @@ export default function Admin() {
               eligibleStudents.map((student, i) => (
                 <div key={i} style={S.studentRow}>
                   <div>
-                    <div style={S.studentName}>Student</div>
+                    <div
+                      style={{ ...S.studentName, color: '#0071e3', cursor: 'pointer', textDecoration: 'underline' }}
+                      onClick={() => window.open('/student/' + student.id, '_blank')}
+                      title="View portfolio"
+                    >
+                      {student.name}
+                    </div>
                     <div style={S.studentEmail}>{student.email || student.id.substring(0, 8) + '…'}</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', marginTop: '8px' }}>
                       {student.skills.map(s => (
