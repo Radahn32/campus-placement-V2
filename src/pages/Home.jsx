@@ -1,6 +1,6 @@
 import { supabase } from '../supabase';
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('student');
@@ -99,7 +99,7 @@ export default function Home() {
     },
     navLink: {
       fontSize: '12px', color: '#6e6e73', fontWeight: '400',
-      letterSpacing: '0.01em', cursor: 'pointer',
+      letterSpacing: '0.01em', cursor: 'pointer', textDecoration: 'none',
       transition: 'color 0.2s',
     },
 
@@ -277,9 +277,9 @@ export default function Home() {
       <nav style={S.nav}>
         <span style={S.navLogo}>CareerPath</span>
         <div style={S.navLinks}>
-          <span style={S.navLink}>Features</span>
-          <span style={S.navLink}>About</span>
-          <span style={S.navLink}>NMAMIT</span>
+          <Link to="/features" style={S.navLink}>Features</Link>
+          <Link to="/about" style={S.navLink}>About</Link>
+          <Link to="/nmamit" style={S.navLink}>NMAMIT</Link>
         </div>
         <button
           onClick={() => document.getElementById('login-section').scrollIntoView({ behavior: 'smooth' })}
@@ -309,10 +309,10 @@ export default function Home() {
           >
             Get started
           </button>
-          <a style={S.btnGhost}>
+          <Link to="/features" style={S.btnGhost}>
             Learn more
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0071e3" strokeWidth="2.5"><polyline points="9,18 15,12 9,6" /></svg>
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -432,7 +432,7 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer style={S.footer}>
-        <span style={S.footerText}>Copyright © 2024 CareerPath. NMAMIT, Nitte.</span>
+        <span style={S.footerText}>Copyright © 2026 CareerPath. NMAMIT, Nitte.</span>
       </footer>
     </div>
   );
